@@ -16,6 +16,10 @@ func VisitCommands(cmd *cobra.Command, f func(*cobra.Command)) {
 
 func WrapRunEForCmd(additionalRunE func(*cobra.Command, []string) error) func(cmd *cobra.Command) {
 	return func(cmd *cobra.Command) {
+		if cmd.RunE == nil {
+			panic(fmt.Sprintf("Internal: Command '%s' does not set RunE", cmd.CommandPath()))
+		}
+
 		origRunE := cmd.RunE
 		cmd.RunE = func(cmd2 *cobra.Command, args []string) error {
 			err := additionalRunE(cmd2, args)
