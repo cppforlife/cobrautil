@@ -18,7 +18,7 @@ func VisitCommands(cmd *cobra.Command, fns ...ReconfigureFunc) {
 	}
 }
 
-func ReconfigureLeafCmds(fs ...func(cmd *cobra.Command)) ReconfigureFunc {
+func ReconfigureLeafCmd(fs ...func(cmd *cobra.Command)) ReconfigureFunc {
 	return func(cmd *cobra.Command) {
 		if len(cmd.Commands()) > 0 {
 			return
