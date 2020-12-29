@@ -18,7 +18,7 @@ func VisitCommands(cmd *cobra.Command, fns ...ReconfigureFunc) {
 	}
 }
 
-func ReconfigureLeafCmd(fs ...func(cmd *cobra.Command)) ReconfigureFunc {
+func ReconfigureLeafCmds(fs ...func(cmd *cobra.Command)) ReconfigureFunc {
 	return func(cmd *cobra.Command) {
 		if len(cmd.Commands()) > 0 {
 			return
@@ -48,6 +48,27 @@ func WrapRunEForCmd(additionalRunE func(*cobra.Command, []string) error) Reconfi
 }
 
 // ReconfigureFuncs
+
+func ReconfigureLeafCmd(cmd *cobra.Command) {
+	if len(cmd.Commands()) > 0 {
+		return
+	}
+
+	if cmd.RunE == nil {
+		panic(fmt.Sprintf("Internal: Command '%s' does not set RunE", cmd.CommandPath()))
+	}
+
+	if cmd.Args == nil {
+		origRunE := cmd.RunE
+		cmd.RunE = func(cmd2 *cobra.Command, args []string) error {
+			if len(args) > 0 {
+				return fmt.Errorf("command '%s' does not accept extra arguments '%s'", cmd2.CommandPath(), args[0])
+			}
+			return origRunE(cmd2, args)
+		}
+		cmd.Args = cobra.ArbitraryArgs
+	}
+}
 
 func ReconfigureCmdWithSubcmd(cmd *cobra.Command) {
 	if len(cmd.Commands()) == 0 {
